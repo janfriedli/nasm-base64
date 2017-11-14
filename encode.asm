@@ -13,31 +13,45 @@
 ;    ld -o encode encode.o
 ;
 
-SECTION .bss			; Section containing uninitialized data
+SECTION .bss						; Section containing uninitialized data
 
-	BUFFLEN EQU 6						; reserve 6 bits for each process step
-	Buff	resb BUFFLEN
+	BUFFERLENGTH EQU 6						; reserve 6 bits for each process step
+	Buff	resb BUFFERLENGTH
 
-SECTION .data			; Section containing initialised data
+SECTION .data										; Section containing initialised data
 
-; Here we have two parts of a single useful data structure, implementing
-; the text line of a hex dump utility. The first part displays 16 bytes in
-; hex separated by spaces. Immediately following is a 16-character line
-; delimited by vertical bar characters. Because they are adjacent, the two
-; parts can be referenced separately or as a single contiguous unit.
-; Remember that if DumpLin is to be used separately, you must append an
-; EOL before sending it to the Linux console.
+	; this map is used to get the base64 representation of the coresponding 6 bits.
+	base64Charactermap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	DumpLin:	db " 00 00 00 00 "
+	DUMPLEN		EQU $-DumpLin
+	FULLLEN		EQU $-DumpLin
+	SECTION .text			; Section containing code
 
-DumpLin:	db " 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
-DUMPLEN		EQU $-DumpLin
-ASCLin:		db "|................|",10
-ASCLEN		EQU $-ASCLin
-FULLLEN		EQU $-DumpLin
+;-------------------------------------------------------------------------
+; PrintLine: 	Displays DumpLin to stdout
+; UPDATED: 	4/15/2009
+; IN: 		Nothing
+; RETURNS:	Nothing
+; MODIFIES: 	Nothing
+; CALLS:	Kernel sys_write
+; DESCRIPTION:	The hex dump line string DumpLin is displayed to stdout
+; 		using INT 80h sys_write. All GP registers are preserved.
 
-; this map is used to get the base64 representation of the coresponding 6 bits.
-base64Charactermap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-
-SECTION .text			; Section containing code
+PrintLine:
+	push rax		  ; Save all used registers
+	push rbx		  ; Save all used registers
+	push rcx		  ; Save all used registers
+	push rdx		  ; Save all used registers
+	mov eax,4	  ; Specify sys_write call
+	mov ebx,1	  ; Specify File Descriptor 1: Standard output
+	mov ecx,DumpLin	  ; Pass offset of line string
+	mov edx,FULLLEN	  ; Pass size of the line string
+	int 80h		  ; Make kernel call to display line string
+	pop rdx		  ; Restore all caller's registers
+	pop rcx		  ;
+	pop rbx		  ;
+	pop rax		  ;
+	ret		  ; Return to caller
 
 ;-------------------------------------------------------------------------
 ; LoadBuff: 	Fills a buffer with data from stdin via INT 80h sys_read
@@ -60,7 +74,7 @@ LoadBuff:
 	mov eax,3	  ; Specify sys_read call
 	mov ebx,0	  ; Specify File Descriptor 0: Standard Input
 	mov ecx,Buff	  ; Pass offset of the buffer to read to
-	mov edx,BUFFLEN	  ; Pass number of bytes to read at one pass
+	mov edx,BUFFERLENGTH	  ; Pass number of bytes to read at one pass
 	int 80h		  ; Call sys_read to fill the buffer
 	mov ebp,eax	  ; Save # of bytes read from file for later
 	xor ecx,ecx	  ; Clear buffer pointer ECX to 0
@@ -68,7 +82,6 @@ LoadBuff:
 	pop rbx		  ; Restore caller's EBX
 	pop rax		  ; Restore caller's EAX
 	ret		  ; And return to caller
-
 
 GLOBAL _start
 
@@ -79,11 +92,11 @@ _start:
 	nop			; No-ops for GDB
 	nop
 
-; Whatever initialization needs doing before the loop scan starts is here:
-	xor esi,esi		; Clear total byte counter to 0
-	call LoadBuff		; Read first buffer of data from stdin
-	cmp ebp,0		; If ebp=0, sys_read reached EOF on stdin
-		; Print the "leftovers" line
+	call LoadBuff
+	call PrintLine
+	call Exit
+
+
 Exit:	mov eax,1		; Code for Exit Syscall
 	mov ebx,0		; Return a code of zero
 	int 80H			; Make kernel call

@@ -1,2 +1,2 @@
 make
-./base64
+./encode < test.txt
