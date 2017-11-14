@@ -13,7 +13,7 @@
 ;    ld -o encode encode.o
 ;
 
-SECTION .bss						; Section containing uninitialized data
+SECTION .bss										; Section containing uninitialized data
 
 	BUFFERLENGTH EQU 6						; reserve 6 bits for each process step
 	Buff	resb BUFFERLENGTH
@@ -25,7 +25,9 @@ SECTION .data										; Section containing initialised data
 	DumpLin:	db " 00 00 00 00 "
 	DUMPLEN		EQU $-DumpLin
 	FULLLEN		EQU $-DumpLin
-	SECTION .text			; Section containing code
+	msg db 'Hello World!', 0Ah
+
+SECTION .text			; Section containing code
 
 ;-------------------------------------------------------------------------
 ; PrintLine: 	Displays DumpLin to stdout
@@ -70,7 +72,7 @@ PrintLine:
 LoadBuff:
 	push rax	  ; Save caller's EAX
 	push rbx	  ; Save caller's EBX
-	push rdx	  ; Save caller's EDX
+	push rdx	  ; Save caller's EDXh
 	mov eax,3	  ; Specify sys_read call
 	mov ebx,0	  ; Specify File Descriptor 0: Standard Input
 	mov ecx,Buff	  ; Pass offset of the buffer to read to
@@ -84,7 +86,6 @@ LoadBuff:
 	ret		  ; And return to caller
 
 GLOBAL _start
-
 ; ------------------------------------------------------------------------
 ; MAIN PROGRAM BEGINS HERE
 ;-------------------------------------------------------------------------
@@ -93,9 +94,11 @@ _start:
 	nop
 
 	call LoadBuff
-	call PrintLine
-	call Exit
-
+	mov     edx, 6     ; number of bytes to write - one for each letter plus 0Ah (line feed character)
+  mov     ecx, Buff     ; move the memory address of our message string into ecx
+  mov     ebx, 1      ; write to the STDOUT file
+  mov     eax, 4      ; invoke SYS_WRITE (kernel opcode 4)
+  int     80h
 
 Exit:	mov eax,1		; Code for Exit Syscall
 	mov ebx,0		; Return a code of zero
