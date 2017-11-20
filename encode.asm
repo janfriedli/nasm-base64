@@ -15,7 +15,7 @@
 
 SECTION .bss										; Section containing uninitialized data
 
-	BUFFERLENGTH EQU 6						; reserve 6 bits for each process step
+	BUFFERLENGTH EQU 6						; reserve 6 bytes for each process step
 	Buff	resb BUFFERLENGTH
 
 SECTION .data										; Section containing initialised data
@@ -25,7 +25,8 @@ SECTION .data										; Section containing initialised data
 	DumpLin:	db " 00 00 00 00 "
 	DUMPLEN		EQU $-DumpLin
 	FULLLEN		EQU $-DumpLin
-	msg db 'Hello World!', 0Ah
+	formatout: db "%ld", 0 ; newline, nul terminator
+
 
 SECTION .text			; Section containing code
 
@@ -85,20 +86,27 @@ LoadBuff:
 	pop rax		  ; Restore caller's EAX
 	ret		  ; And return to caller
 
-GLOBAL _start
+extern scanf, printf
+
+global main
 ; ------------------------------------------------------------------------
 ; MAIN PROGRAM BEGINS HERE
 ;-------------------------------------------------------------------------
-_start:
+main:
 	nop			; No-ops for GDB
 	nop
 
 	call LoadBuff
-	mov     edx, 6     ; number of bytes to write - one for each letter plus 0Ah (line feed character)
-  mov     ecx, Buff     ; move the memory address of our message string into ecx
-  mov     ebx, 1      ; write to the STDOUT file
-  mov     eax, 4      ; invoke SYS_WRITE (kernel opcode 4)
-  int     80h
+	mov eax, Buff
+
+	convert:
+	    xor dl, dl              ; start with 0
+	    shr eax, 1              ; shift off a bit (into CF)
+	    adc dl, 48              ; add '0', plus CF -- yields '0' or '1'
+	    mov [ebx+ecx-1], dl     ; set from the end
+	    loop convert
+
+
 
 Exit:	mov eax,1		; Code for Exit Syscall
 	mov ebx,0		; Return a code of zero
