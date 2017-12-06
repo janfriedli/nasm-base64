@@ -1,10 +1,10 @@
-# Algrithm
+# Algorithm
 
 ## Up and running
 1. Clone this repo
 2. run make
-3. ./encode < myBinaryFile
-4. ./decode < myEncodedBase64File.txt
+3. ./encode
+4. ./decode
 
 ## Encoding
 1. Read 6 byte of stdin
