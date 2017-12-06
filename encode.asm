@@ -17,31 +17,26 @@ SECTION .bss										; Section containing uninitialized data
 
 	BUFFERLENGTH EQU 6						; reserve 6 bytes for each process step
 	Buff	resb BUFFERLENGTH
+	var1: resb 8
 
 SECTION .data										; Section containing initialised data
 
 	; this map is used to get the base64 representation of the coresponding 6 bits.
 	base64Charactermap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-	testString: db "testing" ; should become dGVzdGluZw==
-	formatout: db "%d", 0 ; newline, nul terminator
-	testMsg: db "The quieter we become the more we are able to hear",10,0
+	InputMsg: db "Please enter anything you want encode in base64: ",0
+	InputType: db "%s",0
+	FormattypeOut: db "%ld",10,0
 
 
 SECTION .text			; Section containing code
-
-extern scanf, printf
-
-global main
+	extern scanf, printf
+	global main
 
 main:
 	nop			; No-ops for GDB
 	nop
 
-	xor eax, eax
-	mov eax, 122
-	mov ebx, 63 ; mark 6 bits
- 	and ebx, eax
-
-Exit:	mov eax,1		; Code for Exit Syscall
-	mov ebx,0		; Return a code of zero
-	int 80H			; Make kernel call
+	xor rax, rax
+	mov rdi, InputType	;Input format
+	mov rsi, var1	;Address of returnvalue
+	call scanf ; read input that will be base46 encoded
