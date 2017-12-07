@@ -39,15 +39,15 @@ main:
 
 	Read:
 		; Read the necessary data block
-		mov eax, 3		; Specify sys_read call
-		mov ebx, 0		; Specify File Descriptor 0: Standard Input
-		mov ecx, Buff		; Pass offset of the buffer to read to
+		mov eax, 3							; Specify sys_read call
+		mov ebx, 0							; Specify File Descriptor 0: Standard Input
+		mov ecx, Buff						; Pass offset of the buffer to read to
 		mov edx, BUFFERLENGTH		; Pass number of bytes to read at one pass
-		int 80h			; Call sys_read to fill the buffer
+		int 80h									; Call sys_read to fill the buffer
 
-		mov ebp,eax		; Save # of bytes read from file for later
-		cmp eax,0		; If eax=0, sys_read reached EOF on stdin
-		je Done			; Jump If Equal (to 0, from compare)
+		mov ebp, eax		; Save # of bytes read from file for later
+		cmp eax, 0			; If eax=0, sys_read reached EOF on stdin
+		je Done				; Jump If Equal (to 0, from compare)
 
 		; Some cleaning
 		xor rsi, rsi
@@ -65,7 +65,7 @@ main:
 		; First 6 Bits
 		mov rdx, rbx
 		shl rbx, 38 		; Move the finished 6 Bits away
-		shr rbx, 32		; Sets the bits back to the right place
+		shr rbx, 32			; Sets the bits back to the right place
 		shr rdx, 26
 		mov byte al, [base64Charactermap+rdx]
 		mov [res], al
@@ -97,19 +97,19 @@ main:
 		mov [res+3], al
 
 		; Write the line of hexadecimal values to stdout:
-		mov eax,4		; Specify sys_write call
-		mov ebx,1		; Specify File Descriptor 1: Standard output
+		mov eax,4				; Specify sys_write call
+		mov ebx,1				; Specify File Descriptor 1: Standard output
 		mov edx, 64
 		mov ecx, res		; Pass offset of line string
-		int 80h			; Make kernel call to display line string
-		jmp Read		; Loop back and load file buffer again
+		int 80h					; Make kernel call to display line string
+		jmp Read				; Loop back and load file buffer again
 
 
 	testForPlaceholder:
-		cmp rdx, 0 ; compare if we have 0 so we need print a placeholder
-		jne jumpOver ; don't print placeholder if we don't need it
-		mov eax,4		; Specify sys_write call
-		mov ebx,1		; Specify File Descriptor 1: Standard output
+		cmp rdx, 0 							; compare if we have 0 so we need print a placeholder
+		jne jumpOver 						; don't print placeholder if we don't need it
+		mov eax,4								; Specify sys_write call
+		mov ebx,1								; Specify File Descriptor 1: Standard output
 		mov edx, 1
 		mov ecx, placeHolder		; Pass placeholder sign
 		int 80h
