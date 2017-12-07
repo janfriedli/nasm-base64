@@ -95,11 +95,17 @@ main:
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+3], al
 
-	;print the result
-	mov rsi, res
-	mov rdi, formatTypeOut	;Formattype for printf
-	xor rax , rax
-	call printf
+		;print the result
+		mov rsi, res
+		mov rdi, formatTypeOut	;Formattype for printf
+		xor rax , rax
+		call printf
+
+		; Bump the buffer pointer to the next character and see if we're done:
+		inc ecx		; Increment line string pointer
+		cmp ecx,ebp	; Compare to the number of characters in the buffer
+		jna Scan	; Loop back if ecx is <= number of chars in buffer
+		jmp Read
 
 
 	; All done! Let's end this party:
