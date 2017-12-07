@@ -1,2 +1,2 @@
 make
-./encode
+./encode < test.txt
