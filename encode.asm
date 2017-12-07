@@ -18,10 +18,8 @@ SECTION .data				; Section containing initialised data
 	; this map is used to get the base64 representation of the coresponding 6 bits.
 	base64Charactermap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 	inputMsg: db "Please enter anything you want to encode in base64: ", 10
-	inputType: db "%s"
-	placeHolder: db "="
-	formatTypeOut: db "%s", 10
 	formatGreet:    db "%s" ; The printf format
+	placeHolder: db "="
 
 SECTION .text			; Section containing code
 
