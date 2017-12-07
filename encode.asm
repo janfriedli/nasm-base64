@@ -17,10 +17,11 @@ SECTION .data				; Section containing initialised data
 
 	; this map is used to get the base64 representation of the coresponding 6 bits.
 	base64Charactermap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-	inputMsg: db "Please enter anything you want to encode in base64: ", 10, 0
-	inputType: db "%s",0
-	formatTypeOut: db "%s", 10, 0
-	formatGreet:    db "%s", 0		; The printf format
+	inputMsg: db "Please enter anything you want to encode in base64: ", 10
+	inputType: db "%s"
+	placeHolder: db "="
+	formatTypeOut: db "%s", 10
+	formatGreet:    db "%s" ; The printf format
 
 SECTION .text			; Section containing code
 
@@ -29,13 +30,12 @@ SECTION .text			; Section containing code
 
 main:
 	nop			; No-ops for GDB
-	nop
 
-	; greet the user and tell him what to do
-	mov rsi, inputMsg
-	mov rdi, formatGreet	;Formattype for printf
-	xor rax , rax
-	call printf
+	; ; greet the user and tell him what to do
+	; mov rsi, inputMsg
+	; mov rdi, formatGreet	;Formattype for printf
+	; xor rax , rax
+	; call printf
 
 	Read:
 		; Read the necessary data block
@@ -44,18 +44,17 @@ main:
 		mov ecx, Buff		; Pass offset of the buffer to read to
 		mov edx, BUFFERLENGTH		; Pass number of bytes to read at one pass
 		int 80h			; Call sys_read to fill the buffer
-		mov ebp, eax		; Save # of bytes read from file for later
-		cmp eax, 0		; If eax=0, sys_read reached EOF on stdin
+
+		mov ebp,eax		; Save # of bytes read from file for later
+		cmp eax,0		; If eax=0, sys_read reached EOF on stdin
 		je Done			; Jump If Equal (to 0, from compare)
 
 		; Some cleaning
-		xor rax, rax
 		xor rsi, rsi
 		xor rdi, rdi
 		xor rbx, rbx
 		xor rcx, rcx
 		xor rdx, rdx
-		xor [res], dword res
 
 		; Fill the data for further processing
 		mov byte bh, [Buff]
@@ -79,11 +78,12 @@ main:
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+1], al
 
-		; NeXT 6 Bits
+		; Next 6 Bits
 		mov rdx, rbx
 		shl rbx, 38
 		shr rbx, 32
 		shr rdx, 26
+		call testForPlaceholder
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+2], al
 
@@ -92,18 +92,29 @@ main:
 		shl rbx, 38
 		shr rbx, 32
 		shr rdx, 26
+		call testForPlaceholder
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+3], al
 
-		; print the result
-		mov rsi, res
-		mov rdi, formatTypeOut	; Formattype for printf
-		xor rax , rax
-		call printf
+		; Write the line of hexadecimal values to stdout:
+		mov eax,4		; Specify sys_write call
+		mov ebx,1		; Specify File Descriptor 1: Standard output
+		mov edx, 64
+		mov ecx, res		; Pass offset of line string
+		int 80h			; Make kernel call to display line string
+		jmp Read		; Loop back and load file buffer again
 
-		; Bump the buffer pointer
-		inc ecx		; Increment line string pointer
-		jmp Read	; jump back and repeat untill we have nothing left
+
+	testForPlaceholder:
+		cmp rdx, 0 ; compare if we have 0 so we need print a placeholder
+		jne jumpOver ; don't print placeholder if we don't need it
+		mov eax,4		; Specify sys_write call
+		mov ebx,1		; Specify File Descriptor 1: Standard output
+		mov edx, 1
+		mov ecx, placeHolder		; Pass placeholder sign
+		int 80h
+		jumpOver:
+		ret
 
 
 	; All done! Let's end this party:
