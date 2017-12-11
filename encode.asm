@@ -34,32 +34,40 @@ main:
 	; mov rdi, formatGreet	;Formattype for printf
 	; xor rax , rax
 	; call printf
-
+	xor r9, r9
+		
 	Read:
 		; Read the necessary data block
-		mov eax, 3							; Specify sys_read call
-		mov ebx, 0							; Specify File Descriptor 0: Standard Input
-		mov ecx, Buff						; Pass offset of the buffer to read to
-		mov edx, BUFFERLENGTH		; Pass number of bytes to read at one pass
+		mov rax, 3							; Specify sys_read call
+		mov rbx, 0							; Specify File Descriptor 0: Standard Input
+		mov rcx, Buff						; Pass offset of the buffer to read to
+		mov rdx, BUFFERLENGTH		; Pass number of bytes to read at one pass
 		int 80h									; Call sys_read to fill the buffer
 
-		mov ebp, eax		; Save # of bytes read from file for later
-		cmp eax, 0			; If eax=0, sys_read reached EOF on stdin
+		mov rbp, rax		; Save # of bytes read from file for later
+		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
 		je Done				; Jump If Equal (to 0, from compare)
 
 		; Some cleaning
 		xor rsi, rsi
 		xor rdi, rdi
+		xor rax, rax
 		xor rbx, rbx
 		xor rcx, rcx
 		xor rdx, rdx
+	
 
-		; Fill the data for further processing
+	
+		; Fill the data for further 
 		mov byte bh, [Buff]
+		call bhigh
 		mov byte bl, [Buff+1]
+		call blow
 		shl rbx, 16
 		mov byte bh, [Buff+2]
+		call bhigh
 
+	
 		; First 6 Bits
 		mov rdx, rbx
 		shl rbx, 38 		; Move the finished 6 Bits away
@@ -67,7 +75,6 @@ main:
 		shr rdx, 26
 		mov byte al, [base64Charactermap+rdx]
 		mov [res], al
-
 		; Next 6 Bits
 		mov rdx, rbx
 		shl rbx, 38
@@ -75,16 +82,14 @@ main:
 		shr rdx, 26
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+1], al
-
 		; Next 6 Bits
 		mov rdx, rbx
 		shl rbx, 38
 		shr rbx, 32
-		shr rdx, 26
+		shr rdx, 26	
 		call testForPlaceholder
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+2], al
-
 		; Last 6 bits
 		mov rdx, rbx
 		shl rbx, 38
@@ -93,12 +98,11 @@ main:
 		call testForPlaceholder
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+3], al
-
 		; Write the line of hexadecimal values to stdout:
-		mov eax,4				; Specify sys_write call
-		mov ebx,1				; Specify File Descriptor 1: Standard output
-		mov edx, 64
-		mov ecx, res		; Pass offset of line string
+		mov rax,4				; Specify sys_write call
+		mov rbx,1				; Specify File Descriptor 1: Standard output
+		mov rdx, 64
+		mov rcx, res		; Pass offset of line string
 		int 80h					; Make kernel call to display line string
 		jmp Read				; Loop back and load file buffer again
 
@@ -106,17 +110,30 @@ main:
 	testForPlaceholder:
 		cmp rdx, 0 							; compare if we have 0 so we need print a placeholder
 		jne jumpOver 						; don't print placeholder if we don't need it
-		mov eax,4								; Specify sys_write call
-		mov ebx,1								; Specify File Descriptor 1: Standard output
-		mov edx, 1
-		mov ecx, placeHolder		; Pass placeholder sign
+		inc r9								; Specify sys_write call
+		mov rbx,1								; Specify File Descriptor 1: Standard output
+		mov rdx, 1
+		mov rcx, placeHolder		; Pass placeholder sign
 		int 80h
 		jumpOver:
-		ret
+	ret
 
+blow:
+	cmp bl, 10
+	jne not
+	mov bl, 0
+not:
+	ret
+bhigh:
+	cmp bh, 10
+	jne not1
+	mov bh, 0
+not1:
+	ret
+	
 
 	; All done! Let's end this party:
 	Done:
-		mov eax,1		; Code for Exit Syscall
-		mov ebx,0		; Return a code of zero
+		mov rax,1		; Code for Exit Syscall
+		mov rbx,0		; Return a code of zero
 		int 80H			; Make kernel call
