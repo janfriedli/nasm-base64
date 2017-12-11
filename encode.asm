@@ -61,7 +61,7 @@ main:
 
 		mov r9, [counter] ; = counter
 
-		; Fill the data for further
+		; Fill the data for further processing and handle new line feed
 		mov byte bh, [Buff]
 		call bhigh
 		mov byte bl, [Buff+1]
@@ -105,14 +105,13 @@ main:
 		shr rbx, 32
 		shr rdx, 26
 		call testForPlaceholder
-		cmp r9, 2
+		cmp r9, 2 ; jump over the add to result since we don't want to print an A
 		je noSecondAChar
-		cmp r9, 1
+		cmp r9, 1 ; same here but in the case we only have one placeholder
 		je noSecondAChar
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+3], al
 		noSecondAChar:
-
 
 		; Write the corresponding value to stdout:
 		mov rax, 4				; Specify sys_write call
@@ -135,14 +134,14 @@ main:
 		cmp bl, 10
 		jne notBlow
 		mov bl, 0
-	notBlow:
+		notBlow:
 		ret
 
 	bhigh:
 		cmp bh, 10
 		jne notHigh
 		mov bh, 0
-	notHigh:
+		notHigh:
 		ret
 
 	printPlaceholders:
