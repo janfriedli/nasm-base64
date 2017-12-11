@@ -19,9 +19,18 @@ fi
 
 # test single loop no =
 if [ "$(echo 'sss' | ./encode)" == "c3Nz" ]; then
-  echo -e "\e[92m single loop no = passed"
+  echo -e "\e[92m single loop passed"
 else
-  echo -e "\033[31m single loop no = FAILED"
+  echo -e "\033[31m single loop FAILED"
+fi
+
+#----------------------------------------------------------------
+
+# test double loop no =
+if [ "$(echo 'sasaas' | ./encode)" == "c2FzYWFz" ]; then
+  echo -e "\e[92m double loop passed"
+else
+  echo -e "\033[31m double loop FAILED"
 fi
 
 # test double loop with =
@@ -29,15 +38,6 @@ if [ "$(echo 'sasaa' | ./encode)" == "c2FzYWE=" ]; then
   echo -e "\e[92m double loop with = passed"
 else
   echo -e "\033[31m double loop with = FAILED"
-  exit 1
-fi
-
-# test double loop no =
-if [ "$(echo 'sasaas' | ./encode)" == "c2FzYWFz" ]; then
-  echo -e "\e[92m double loop no = passed"
-else
-  echo -e "\033[31m double loop no = FAILED"
-  exit 1
 fi
 
 # test double loop with ==
@@ -45,7 +45,6 @@ if [ "$(echo 'sasaass' | ./encode)" == "c2FzYWFzcw==" ]; then
   echo -e "\e[92m double loop with == passed"
 else
   echo -e "\033[31m double loop with == FAILED"
-  exit 1
 fi
 
 exit 1
