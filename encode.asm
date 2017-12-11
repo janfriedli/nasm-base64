@@ -77,14 +77,16 @@ main:
 		shr rdx, 26
 		mov byte al, [base64Charactermap+rdx]
 		mov [res], al
-		; Next 6 Bits
+
+		; 6-12 Bits
 		mov rdx, rbx
 		shl rbx, 38
 		shr rbx, 32
 		shr rdx, 26
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+1], al
-		; Next 6 Bits
+
+		; 12-18 Bits
 		mov rdx, rbx
 		shl rbx, 38
 		shr rbx, 32
@@ -92,6 +94,7 @@ main:
 		call testForPlaceholder
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+2], al
+
 		; Last 6 bits
 		mov rdx, rbx
 		shl rbx, 38
@@ -100,9 +103,10 @@ main:
 		call testForPlaceholder
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+3], al
-		; Write the line of hexadecimal values to stdout:
-		mov rax,4				; Specify sys_write call
-		mov rbx,1				; Specify File Descriptor 1: Standard output
+
+		; Write the corresponding value to stdout:
+		mov rax, 4				; Specify sys_write call
+		mov rbx, 1				; Specify File Descriptor 1: Standard output
 		mov rdx, 64
 		mov rcx, res		; Pass offset of line string
 		int 80h					; Make kernel call to display line string
@@ -119,15 +123,15 @@ main:
 
 	blow:
 		cmp bl, 10
-		jne not1
+		jne notBlow
 		mov bl, 0
-	not1:
+	notBlow:
 		ret
 	bhigh:
 		cmp bh, 10
-		jne not2
+		jne notHigh
 		mov bh, 0
-	not2:
+	notHigh:
 		ret
 
 	printPlaceholders:
@@ -148,6 +152,6 @@ main:
 	; All done! Let's end this party:
 	Done:
 		call printPlaceholders
-		mov rax,1		; Code for Exit Syscall
-		mov rbx,0		; Return a code of zero
+		mov rax, 1		; Code for Exit Syscall
+		mov rbx, 0		; Return a code of zero
 		int 80H			; Make kernel call
