@@ -57,8 +57,8 @@ main:
 		xor rcx, rcx
 		xor rdx, rdx
 		xor rax, rax
-
-
+		mov [res], rax
+	
 		mov r9, [counter] ; = counter
 
 		; Fill the data for further processing and handle new line feed
@@ -69,8 +69,8 @@ main:
 		shl rbx, 16
 		mov byte bh, [Buff+2]
 		call bhigh
-
-
+		mov [Buff], rax
+		
 		; First 6 Bits
 		mov rdx, rbx
 		shl rbx, 38 		; Move the finished 6 Bits away
