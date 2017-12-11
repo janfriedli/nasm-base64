@@ -56,6 +56,7 @@ main:
 		xor rbx, rbx
 		xor rcx, rcx
 		xor rdx, rdx
+		xor rax, rax
 
 
 		mov r9, [counter] ; = counter
@@ -92,8 +93,11 @@ main:
 		shr rbx, 32
 		shr rdx, 26
 		call testForPlaceholder
+		cmp r9, 1
+		je noAChar
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+2], al
+		noAChar:
 
 		; Last 6 bits
 		mov rdx, rbx
@@ -101,8 +105,14 @@ main:
 		shr rbx, 32
 		shr rdx, 26
 		call testForPlaceholder
+		cmp r9, 2
+		je noSecondAChar
+		cmp r9, 1
+		je noSecondAChar
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+3], al
+		noSecondAChar:
+
 
 		; Write the corresponding value to stdout:
 		mov rax, 4				; Specify sys_write call
@@ -127,6 +137,7 @@ main:
 		mov bl, 0
 	notBlow:
 		ret
+
 	bhigh:
 		cmp bh, 10
 		jne notHigh
