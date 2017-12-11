@@ -20,6 +20,7 @@ SECTION .data				; Section containing initialised data
 	inputMsg: db "Please enter anything you want to encode in base64: ", 10
 	formatGreet:    db "%s" ; The printf format
 	placeHolder: db "="
+	counter db 0
 
 SECTION .text			; Section containing code
 
@@ -35,7 +36,7 @@ main:
 	; xor rax , rax
 	; call printf
 	xor r9, r9
-		
+
 	Read:
 		; Read the necessary data block
 		mov rax, 3							; Specify sys_read call
@@ -55,10 +56,11 @@ main:
 		xor rbx, rbx
 		xor rcx, rcx
 		xor rdx, rdx
-	
 
-	
-		; Fill the data for further 
+
+		mov r9, [counter] ; = counter
+
+		; Fill the data for further
 		mov byte bh, [Buff]
 		call bhigh
 		mov byte bl, [Buff+1]
@@ -67,7 +69,7 @@ main:
 		mov byte bh, [Buff+2]
 		call bhigh
 
-	
+
 		; First 6 Bits
 		mov rdx, rbx
 		shl rbx, 38 		; Move the finished 6 Bits away
@@ -86,7 +88,7 @@ main:
 		mov rdx, rbx
 		shl rbx, 38
 		shr rbx, 32
-		shr rdx, 26	
+		shr rdx, 26
 		call testForPlaceholder
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+2], al
@@ -110,30 +112,42 @@ main:
 	testForPlaceholder:
 		cmp rdx, 0 							; compare if we have 0 so we need print a placeholder
 		jne jumpOver 						; don't print placeholder if we don't need it
-		inc r9								; Specify sys_write call
-		mov rbx,1								; Specify File Descriptor 1: Standard output
-		mov rdx, 1
-		mov rcx, placeHolder		; Pass placeholder sign
-		int 80h
+		inc r9
+		mov [counter], r9				; inc '=' counter
 		jumpOver:
-	ret
+		ret
 
-blow:
-	cmp bl, 10
-	jne not
-	mov bl, 0
-not:
-	ret
-bhigh:
-	cmp bh, 10
-	jne not1
-	mov bh, 0
-not1:
-	ret
-	
+	blow:
+		cmp bl, 10
+		jne not1
+		mov bl, 0
+	not1:
+		ret
+	bhigh:
+		cmp bh, 10
+		jne not2
+		mov bh, 0
+	not2:
+		ret
+
+	printPlaceholders:
+		mov r9, [counter]
+		cmp r9, 0
+		je noPlaceholder
+				dec r9
+				mov [counter], r9
+				mov eax, 4								; std_out
+				mov ebx, 1								; Specify File Descriptor 1: Standard output
+				mov edx, 1
+				mov ecx, placeHolder			; Pass placeholder sign
+				int 80h
+				call printPlaceholders
+		noPlaceholder:
+		ret
 
 	; All done! Let's end this party:
 	Done:
+		call printPlaceholders
 		mov rax,1		; Code for Exit Syscall
 		mov rbx,0		; Return a code of zero
 		int 80H			; Make kernel call
