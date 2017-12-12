@@ -45,4 +45,19 @@ else
   echo -e "\033[31m double loop with == FAILED: $(echo 'sasaass' | ./encode) expected c2FzYWFzcw=="
 fi
 
+# test long
+if [ "$(echo 'iuasdfoasdfkbasdfjas' | ./encode)" == "aXVhc2Rmb2FzZGZrYmFzZGZqYXM=" ]; then
+  echo -e "\e[92m long with = passed"
+else
+  echo -e "\033[31m long with = FAILED: $(echo 'iuasdfoasdfkbasdfjas' | ./encode) expected aXVhc2Rmb2FzZGZrYmFzZGZqYXM="
+fi
+
+
+# test long with space
+if [ "$(echo 'iuasdfoa sdfkbasdfjas' | ./encode)" == "aXVhc2Rmb2Egc2Rma2Jhc2RmamFz" ]; then
+  echo -e "\e[92m long with space passed"
+else
+  echo -e "\033[31m long with space FAILED: $(echo 'iuasdfoa sdfkbasdfjas' | ./encode) expected aXVhc2Rmb2Egc2Rma2Jhc2RmamFz"
+fi
+
 exit 0
