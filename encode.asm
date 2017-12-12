@@ -30,11 +30,11 @@ SECTION .text			; Section containing code
 main:
 	nop			; No-ops for GDB
 
-	; ; greet the user and tell him what to do
-	; mov rsi, inputMsg
-	; mov rdi, formatGreet	;Formattype for printf
-	; xor rax , rax
-	; call printf
+	; greet the user and tell him what to do
+	mov rsi, inputMsg
+	mov rdi, formatGreet	;Formattype for printf
+	xor rax , rax
+	call printf
 	xor r9, r9
 
 	Read:
@@ -48,6 +48,8 @@ main:
 		mov rbp, rax		; Save # of bytes read from file for later
 		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
 		je Done				; Jump If Equal (to 0, from compare)
+		cmp rax, 1			; If rax is 1 we have Start of Heading which we ignore
+		je Done				; Jump If Equal (to 0, from compare)
 
 		; Some cleaning
 		xor rsi, rsi
@@ -58,7 +60,7 @@ main:
 		xor rdx, rdx
 		xor rax, rax
 		mov [res], rax
-	
+
 		mov r9, [counter] ; = counter
 
 		; Fill the data for further processing and handle new line feed
@@ -70,7 +72,7 @@ main:
 		mov byte bh, [Buff+2]
 		call bhigh
 		mov [Buff], rax
-		
+
 		; First 6 Bits
 		mov rdx, rbx
 		shl rbx, 38 		; Move the finished 6 Bits away
