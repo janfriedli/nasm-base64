@@ -1,9 +1,9 @@
-all: base64
+all: encode
 
 clean:
 	rm *.o *~
 
-base64: base64.o
-	ld -o base64 base64.o
-base64.o: base64.asm
-	nasm -f elf64 -g -F stabs base64.asm
+encode: encode.o
+	gcc -o encode encode.o
+encode.o: encode.asm
+	nasm -f elf64 -g -F dwarf encode.asm
