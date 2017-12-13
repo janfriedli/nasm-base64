@@ -7,7 +7,7 @@
 
 SECTION .bss				; Section containing uninitialized data
 
-	BUFFERLENGTH EQU 1						; reserve 1 bytes for a char each
+	BUFFERLENGTH EQU 4						; reserve 4 bytes for each char
 	Buff	resb BUFFERLENGTH
 	outputBuffer: resb 64
 
