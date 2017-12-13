@@ -51,18 +51,6 @@ main:
 		cmp rax, 1			; If rax is 1 we have Start of Heading which we ignore
 		je Done				; Jump If Equal (to 0, from compare)
 
-		; Some cleaning
-		xor rsi, rsi
-		xor rdi, rdi
-		xor rax, rax
-		xor rbx, rbx
-		xor rcx, rcx
-		xor rdx, rdx
-		xor rax, rax
-		mov [res], rax
-
-		mov r9, [counter] ; = counter
-
 		; Fill the data for further processing and handle new line feed
 		mov byte bh, [Buff]
 		call bhigh
