@@ -1,6 +1,13 @@
 #!/bin/bash
 make
 
+# test empty
+if [ "$(echo '' | ./encode)" == "" ]; then
+  echo -e "\e[92m empty passed"
+else
+  echo -e "\033[31m empty FAILED"
+fi
+
 # test single loop no =
 if [ "$(echo 'sss' | ./encode)" == "c3Nz" ]; then
   echo -e "\e[92m single loop passed"
@@ -58,6 +65,13 @@ if [ "$(echo 'iuasdfoa sdfkbasdfjas' | ./encode)" == "aXVhc2Rmb2Egc2Rma2Jhc2Rmam
   echo -e "\e[92m long with space passed"
 else
   echo -e "\033[31m long with space FAILED: $(echo 'iuasdfoa sdfkbasdfjas' | ./encode) expected aXVhc2Rmb2Egc2Rma2Jhc2RmamFz"
+fi
+
+#test lorem ipsum in file
+if [ "$(./encode < test/lorem)" == "$(base64 < test/lorem)" ]; then
+  echo -e "\e[92m file"
+else
+  echo -e "\033[31m file FAILED:\n$(./encode < test/lorem) \nexpected \n$(base64 < test/lorem)"
 fi
 
 exit 0
