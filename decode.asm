@@ -35,6 +35,7 @@ main:
 		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
 		je Done		; Jump If Equal (to 0, from compare)
 
+		; logic goes here
 		mov byte bh, [Buff] ; get the char from the buffer
 		mov [outputBuffer], bh ; store it in res
 
