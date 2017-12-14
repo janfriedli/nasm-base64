@@ -9,7 +9,7 @@ SECTION .bss				; Section containing uninitialized data
 
 	BUFFERLENGTH EQU 4						; reserve 4 bytes for each char
 	Buff	resb BUFFERLENGTH
-	outputBuffer: resb 64
+	outputBuffer: resb 3
 
 SECTION .data				; Section containing initialised data
 
@@ -31,13 +31,13 @@ main:
 		mov rdx, BUFFERLENGTH		; Pass number of bytes to read at one pass
 		int 80h									; Call sys_read to fill the buffer
 
-		mov rbp, rax		; Save # of bytes read from file for later
 		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
 		je Done		; Jump If Equal (to 0, from compare)
 
 		; logic goes here
 		xor rcx, rcx
 		xor rdx, rdx
+		xor rsi, rsi
 		mov edx, 0
 
 		loopOverFourBytes:
@@ -51,10 +51,12 @@ main:
 				cmp al, bl ; compare if both chars are the same
 				jne findCharInMap
 
-			mov [outputBuffer + edx], ecx ; store it in res
+			shl esi, 6 ; move em to the left
+			or esi, ecx ; mask the 6bits
 			inc dl
-			cmp dl, 5 ; compare if loop over +1 one for reasons
+			cmp dl, 5 ; compare if loop over +1 because we inc above
 			jne loopOverFourBytes
+		mov [outputBuffer], esi
 
 		xor rax, rax
 		mov edx, 64     ; number of bytes to write - one for each letter plus 0Ah (line feed character)
