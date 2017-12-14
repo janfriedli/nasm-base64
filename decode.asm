@@ -7,7 +7,7 @@
 
 SECTION .bss				; Section containing uninitialized data
 
-	BUFFERLENGTH EQU 1						; reserve 1 byte for each char
+	BUFFERLENGTH EQU 4						; reserve 4 bytes for each char
 	Buff	resb BUFFERLENGTH
 	outputBuffer: resb 64
 
@@ -36,27 +36,25 @@ main:
 		je Done		; Jump If Equal (to 0, from compare)
 
 		; logic goes here
+		xor rcx, rcx
+		xor rdx, rdx
+		mov edx, 0
+
+		loopOverFourBytes:
+		; loop over the base64 map to find the accroding position value
 		xor rax, rax
 		xor rbx, rbx
-		xor rcx, rcx
+			findCharInMap:
+				mov byte bl, [Buff + edx] ; get the char from the buffer
+				mov byte al, [base64CharacterMap + ecx] ; get a character
+				inc ecx	; inc counter
+				cmp al, bl ; compare if both chars are the same
+				jne findCharInMap
 
-		findCharInMap:
-			mov byte bl, [Buff] ; get the char from the buffer
-			mov byte al, [base64CharacterMap + ecx] ; get a character
-			inc ecx
-			cmp al, bl ; compare if both chars are the same
-			jne findCharInMap
-
-		; xor rbx, rbx
-		; xor ecx, ecx
-		;
-		; findCharInMap:
-	  ;   inc ecx  ; get ready for next one
-	  ;   cmp byte al, bh  ; a match
-	  ;   jz Done
-    ; 	jmp findCharInMap
-
-		mov [outputBuffer], bh ; store it in res
+			mov [outputBuffer + edx], ecx ; store it in res
+			inc dl
+			cmp dl, 5 ; compare if loop over +1 one for reasons
+			jne loopOverFourBytes
 
 		xor rax, rax
 		mov edx, 64     ; number of bytes to write - one for each letter plus 0Ah (line feed character)
