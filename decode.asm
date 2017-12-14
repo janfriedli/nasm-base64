@@ -7,14 +7,14 @@
 
 SECTION .bss				; Section containing uninitialized data
 
-	BUFFERLENGTH EQU 4						; reserve 4 bytes for each char
+	BUFFERLENGTH EQU 1						; reserve 1 byte for each char
 	Buff	resb BUFFERLENGTH
 	outputBuffer: resb 64
 
 SECTION .data				; Section containing initialised data
 
 	; this map is used to get the base64 representation of the coresponding 6 bits.
-	base64Charactermap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	base64CharacterMap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", 10
 	inputMsg: db "Please enter anything you want to decode from base64: ", 10
 
 SECTION .text			; Section containing code
@@ -36,7 +36,26 @@ main:
 		je Done		; Jump If Equal (to 0, from compare)
 
 		; logic goes here
-		mov byte bh, [Buff] ; get the char from the buffer
+		xor rax, rax
+		xor rbx, rbx
+		xor rcx, rcx
+
+		findCharInMap:
+			mov byte bl, [Buff] ; get the char from the buffer
+			mov byte al, [base64CharacterMap + ecx] ; get a character
+			inc ecx
+			cmp al, bl ; compare if both chars are the same
+			jne findCharInMap
+
+		; xor rbx, rbx
+		; xor ecx, ecx
+		;
+		; findCharInMap:
+	  ;   inc ecx  ; get ready for next one
+	  ;   cmp byte al, bh  ; a match
+	  ;   jz Done
+    ; 	jmp findCharInMap
+
 		mov [outputBuffer], bh ; store it in res
 
 		xor rax, rax
