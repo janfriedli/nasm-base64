@@ -22,6 +22,8 @@ SECTION .text			; Section containing code
 
 main:
 	nop			; No-ops for GDB
+	mov r9, 0 ; counter which goes up to four and resets
+	xor rsi, rsi
 
 	Read:
 		; Read the necessary data block
@@ -31,32 +33,40 @@ main:
 		mov rdx, BUFFERLENGTH		; Pass number of bytes to read at one pass
 		int 80h									; Call sys_read to fill the buffer
 
+		mov rbp, rax		; Save # of bytes read from file for later
 		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
 		je Done		; Jump If Equal (to 0, from compare)
 
-		; logic goes here
-		xor rcx, rcx
-		xor rdx, rdx
-		xor rsi, rsi
-		mov edx, 0
+		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
+		je Done		; Jump If Equal (to 0, from compare)
 
-		loopOverFourBytes:
-		; loop over the base64 map to find the accroding position value
-		xor rax, rax
-		xor rbx, rbx
-			findCharInMap:
-				mov byte bl, [Buff + edx] ; get the char from the buffer
-				mov byte al, [base64CharacterMap + ecx] ; get a character
-				inc ecx	; inc counter
-				cmp al, bl ; compare if both chars are the same
-				jne findCharInMap
+		xor rsi, rsi ; clean result every round
 
-			shl esi, 6 ; move em to the left
-			or esi, ecx ; mask the 6bits
-			inc dl
-			cmp dl, 5 ; compare if loop over +1 because we inc above
-			jne loopOverFourBytes
-		mov [outputBuffer], esi
+		; find first char and shift it into the result
+		call findCharInMap
+		add esi, ecx
+		add r9d, esi
+		shl r9d, 6
+		; second
+		call findCharInMap
+		add esi, ecx
+		or r9d, esi
+		shl r9d, 6
+
+		; third
+		call findCharInMap
+		add esi, ecx
+		or r9d, esi
+		shl r9d, esi
+
+		; and last one
+		call findCharInMap
+		add esi, ecx
+		or r9d, esi
+
+		; split the 24-bit number into the original three 8-bit (ASCII) characters
+		shr r9d, 16
+		mov [outputBuffer], r9d
 
 		xor rax, rax
 		mov edx, 64     ; number of bytes to write - one for each letter plus 0Ah (line feed character)
@@ -65,7 +75,24 @@ main:
 	 	mov eax, 4      ; invoke SYS_WRITE (kernel opcode 4)
 	 	int 80h
 
-		jmp Read				; Loop back and load file buffer again
+		xor rsi, rsi ; reset res buffer
+		jmp Read
+
+	; gets the reverse value of the map char
+	findCharInMap:
+		xor rax, rax
+		xor rbx, rbx
+		xor rsi, rsi
+		xor rdx, rdx
+		xor rcx, rcx
+		xor rdx, rdx
+		afterClean:
+			mov byte bl, [Buff + edx] ; get the char from the buffer
+			mov byte al, [base64CharacterMap + ecx] ; get a character
+			inc ecx	; inc counter
+			cmp al, bl ; compare if both chars are the same
+		jne afterClean
+		ret
 
 	; All done! Let's end this party:
 	Done:
