@@ -86,31 +86,31 @@ echo 'RUNNING DECODE TESTS NOW\n'
 
 
 # test empty
-if [ "$(echo '' | ./encode)" == "" ]; then
+if [ "$(echo '' | ./decode)" == "" ]; then
   echo -e "\e[92m empty passed"
 else
   echo -e "\033[31m empty FAILED"
 fi
 
 # test single loop no =
-if [ "$(echo 'sss' | ./encode)" == "c3Nz" ]; then
+if [ "$(echo 'c3Nz' | ./encode)" == "sss" ]; then
   echo -e "\e[92m single loop passed"
 else
-  echo -e "\033[31m single loop FAILED: $(echo 'sss' | ./encode) expected c3Nz"
+  echo -e "\033[31m single loop FAILED: (echo 'c3Nz' | ./encode) expected sss"
 fi
 
 # test single loop with =
-if [ "$(echo 'sa' | ./encode)" == "c2E=" ]; then
+if [ "$(echo 'c2E=' | ./decode)" == "sa" ]; then
   echo -e "\e[92m single loop with = passed"
 else
-  echo -e "\033[31m single loop with = FAILED: $(echo 'sa' | ./encode) expected c2E="
+  echo -e "\033[31m single loop with = FAILED: $(echo 'c2E=' | ./decode) expected sa"
 fi
 
 # test single loop with ==
-if [ "$(echo '0' | ./encode)" == "MA==" ]; then
+if [ "$(echo 'MA==' | ./decode)" == "0" ]; then
   echo -e "\e[92m single loop with == passed"
 else
-  echo -e "\033[31m single loop with == FAILED: $(echo '0' | ./encode) expected MA=="
+  echo -e "\033[31m single loop with == FAILED: $(echo 'MA==' | ./decode) expected 0"
 fi
 
 #----------------------------------------------------------------
