@@ -69,9 +69,10 @@ main:
 		mov rax, rsi
 		shr rax, 8
 		and rax, 255
-		cmp rax, 254
+		cmp rax, 31
 		jne dontSetNullOne
 		xor rax, rax
+		jmp dontSetNull
 		dontSetNullOne:
 		mov [outputBuffer+1], rax
 
