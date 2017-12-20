@@ -17,24 +17,16 @@ SECTION .data				; Section containing initialised data
 
 	; this map is used to get the base64 representation of the coresponding 6 bits.
 	base64Charactermap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-	inputMsg: db "Please enter anything you want to encode in base64: ", 10
-	formatGreet:    db "%s" ; The printf format
 	placeHolder: db "="
 	counter db 0
 
 SECTION .text			; Section containing code
 
-	extern scanf, printf
 	global main
 
 main:
 	nop			; No-ops for GDB
 
-	; greet the user and tell him what to do
-	mov rsi, inputMsg
-	mov rdi, formatGreet	;Formattype for printf
-	xor rax , rax
-	call printf
 	xor r9, r9
 
 	Read:
