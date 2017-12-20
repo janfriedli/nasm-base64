@@ -23,19 +23,11 @@ SECTION .data				; Section containing initialised data
 	counter db 0
 
 SECTION .text			; Section containing code
+	global _start ; linker entry point
 
-	extern scanf, printf
-	global main
-
-main:
+_start:
 	nop			; No-ops for GDB
-
-	; greet the user and tell him what to do
-	mov rsi, inputMsg
-	mov rdi, formatGreet	;Formattype for printf
-	xor rax , rax
-	call printf
-	xor r9, r9
+	xor rbp, rbp ; cleanup
 
 	Read:
 		; Read the necessary data block
@@ -45,7 +37,6 @@ main:
 		mov rdx, BUFFERLENGTH		; Pass number of bytes to read at one pass
 		int 80h									; Call sys_read to fill the buffer
 
-		mov rbp, rax		; Save # of bytes read from file for later
 		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
 		je Done				; Jump If Equal (to 0, from compare)
 		cmp rax, 1			; If rax is 1 we have Start of Heading which we ignore
@@ -83,7 +74,7 @@ main:
 		shr rbx, 32
 		shr rdx, 26
 		call testForPlaceholder
-		cmp r9, 1
+		cmp rbp, 1
 		je noAChar
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+2], al
@@ -95,9 +86,9 @@ main:
 		shr rbx, 32
 		shr rdx, 26
 		call testForPlaceholder
-		cmp r9, 2 ; jump over the add to result since we don't want to print an A
+		cmp rbp, 2 ; jump over the add to result since we don't want to print an A
 		je noSecondAChar
-		cmp r9, 1 ; same here but in the case we only have one placeholder
+		cmp rbp, 1 ; same here but in the case we only have one placeholder
 		je noSecondAChar
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+3], al
@@ -115,8 +106,7 @@ main:
 	testForPlaceholder:
 		cmp rdx, 0 							; compare if we have 0 so we need print a placeholder
 		jne jumpOver 						; don't print placeholder if we don't need it
-		inc r9
-		mov [counter], r9				; inc '=' counter
+		inc rbp
 		jumpOver:
 		ret
 
@@ -135,11 +125,9 @@ main:
 		ret
 
 	printPlaceholders:
-		mov r9, [counter]
-		cmp r9, 0
+		cmp rbp, 0
 		je noPlaceholder
-				dec r9
-				mov [counter], r9
+				dec rbp
 				mov eax, 4								; std_out
 				mov ebx, 1								; Specify File Descriptor 1: Standard output
 				mov edx, 1
