@@ -33,40 +33,49 @@ main:
 		mov rdx, BUFFERLENGTH		; Pass number of bytes to read at one pass
 		int 80h									; Call sys_read to fill the buffer
 
-		mov rbp, rax		; Save # of bytes read from file for later
 		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
 		je Done		; Jump If Equal (to 0, from compare)
-
-		cmp rax, 0			; If eax=0, sys_read reached EOF on stdin
+		cmp rax, 1			; If eax=0, sys_read reached EOF on stdin
 		je Done		; Jump If Equal (to 0, from compare)
 
 		xor rsi, rsi ; clean result every round
-
+		xor rdx, rdx ; clean char counter
 		; find first char and shift it into the result
 		call findCharInMap
+		shl ecx, 18
 		add esi, ecx
-		add r9d, esi
-		shl r9d, 6
+
 		; second
 		call findCharInMap
+		shl ecx, 12
 		add esi, ecx
-		or r9d, esi
-		shl r9d, 6
 
 		; third
 		call findCharInMap
+		shl ecx, 6
 		add esi, ecx
-		or r9d, esi
-		shl r9d, esi
 
 		; and last one
 		call findCharInMap
 		add esi, ecx
-		or r9d, esi
 
 		; split the 24-bit number into the original three 8-bit (ASCII) characters
-		shr r9d, 16
-		mov [outputBuffer], r9d
+		xor rax, rax
+		mov rax, rsi
+		shr rax, 16
+		and rax, 255
+		mov [outputBuffer], rax
+
+		xor rax, rax
+		mov rax, rsi
+		shr rax, 8
+		and rax, 255
+		mov [outputBuffer+1], rax
+
+		xor rax, rax
+		mov rax, rsi
+		and rax, 255
+		mov [outputBuffer+2], rax
 
 		xor rax, rax
 		mov edx, 64     ; number of bytes to write - one for each letter plus 0Ah (line feed character)
@@ -82,16 +91,15 @@ main:
 	findCharInMap:
 		xor rax, rax
 		xor rbx, rbx
-		xor rsi, rsi
-		xor rdx, rdx
 		xor rcx, rcx
-		xor rdx, rdx
 		afterClean:
 			mov byte bl, [Buff + edx] ; get the char from the buffer
 			mov byte al, [base64CharacterMap + ecx] ; get a character
 			inc ecx	; inc counter
 			cmp al, bl ; compare if both chars are the same
 		jne afterClean
+		dec ecx ; begins at zero so minus one to get the real resu
+		inc edx ; inc to get the nex t
 		ret
 
 	; All done! Let's end this party:
