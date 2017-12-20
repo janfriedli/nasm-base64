@@ -9,7 +9,7 @@ SECTION .bss				; Section containing uninitialized data
 
 	BUFFERLENGTH EQU 4						; reserve 4 bytes for each char
 	Buff	resb BUFFERLENGTH				; the buffer
-	outputBuffer: resb 3					; outputbuffer
+	outputBuffer: resb 3					; output
 
 SECTION .data				; Section containing initialised data
 
