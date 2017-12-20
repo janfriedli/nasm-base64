@@ -1,11 +1,15 @@
 #!/bin/bash
 
 ## Compile sources
-echo 'COMPILING\n'
-
+echo 'COMPILING'
+rm decode
+rm encode
+rm decode.o
+rm encode.o
 make
+
 ## Decode tests from here on
-echo 'RUNNING ENCODE TESTS NOW\n'
+echo 'RUNNING ENCODE TESTS NOW'
 
 # test empty
 if [ "$(echo '' | ./encode)" == "" ]; then
@@ -73,16 +77,8 @@ else
   echo -e "\033[31m long with space FAILED: $(echo 'iuasdfoa sdfkbasdfjas' | ./encode) expected aXVhc2Rmb2Egc2Rma2Jhc2RmamFz"
 fi
 
-#test lorem ipsum in file
-if [ "$(./encode < test/lorem)" == "$(base64 < test/lorem)" ]; then
-  echo -e "\e[92m file"
-else
-  echo -e "\033[31m file FAILED:\n$(./encode < test/lorem) \nexpected \n$(base64 < test/lorem)"
-fi
-
-
 ## Decode tests from here on
-echo 'RUNNING DECODE TESTS NOW\n'
+echo -e '\e[37m RUNNING DECODE TESTS NOW'
 
 
 # test empty
@@ -150,13 +146,5 @@ if [ "$(echo 'aXVhc2Rmb2Egc2Rma2Jhc2RmamFz' | ./decode)" == "iuasdfoa sdfkbasdfj
 else
   echo -e "\033[31m long with space FAILED: $(echo 'aXVhc2Rmb2Egc2Rma2Jhc2RmamFz' | ./decode) expected iuasdfoa sdfkbasdfjas"
 fi
-
-#test lorem ipsum in file
-if [ "$(base64 --decode < test/lorem-base64)" == "$(./decode < test/lorem-base64)" ]; then
-  echo -e "\e[92m file"
-else
-  echo -e "\033[31m file FAILED:\n$(./decode < test/lorem-base64) \nexpected \n$(base64 --decode < test/lorem-base64)"
-fi
-
 
 exit 0

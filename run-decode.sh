@@ -1,2 +1,0 @@
-make
-./decode < test.txt
