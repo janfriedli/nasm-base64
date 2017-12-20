@@ -22,7 +22,6 @@ SECTION .text			; Section containing code
 
 main:
 	nop			; No-ops for GDB
-	mov r9, 0 ; counter which goes up to four and resets
 	xor rsi, rsi
 
 	Read:
@@ -70,11 +69,19 @@ main:
 		mov rax, rsi
 		shr rax, 8
 		and rax, 255
+		cmp rax, 254
+		jne dontSetNullOne
+		xor rax, rax
+		dontSetNullOne:
 		mov [outputBuffer+1], rax
 
 		xor rax, rax
 		mov rax, rsi
 		and rax, 255
+		cmp rax, 127
+		jne dontSetNull
+		xor rax, rax
+		dontSetNull:
 		mov [outputBuffer+2], rax
 
 		xor rax, rax
@@ -92,8 +99,14 @@ main:
 		xor rax, rax
 		xor rbx, rbx
 		xor rcx, rcx
+		; mov rax, [Buff+rdx]
+		; cmp rax, 61 ; find = and replace it with nothing
+		; jne normal
+		; xor rcx, rcx
+		; normal: ; if we have an = end the programm since we reached the end
 		afterClean:
 			mov byte bl, [Buff + edx] ; get the char from the buffer
+
 			mov byte al, [base64CharacterMap + ecx] ; get a character
 			inc ecx	; inc counter
 			cmp al, bl ; compare if both chars are the same
