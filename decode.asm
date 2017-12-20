@@ -18,9 +18,9 @@ SECTION .data				; Section containing initialised data
 	inputMsg: db "Please enter anything you want to decode from base64: ", 10
 
 SECTION .text			; Section containing code
-	global main
+	global _start
 
-main:
+_start:
 	nop			; No-ops for GDB
 
 	Read:
@@ -70,7 +70,7 @@ main:
 		shr rax, 8 ; shift 8bit to get the second 8 bit
 		and rax, 255 ; and to get the ascii representation
 
-		cmp rax, 31	; ascii 31 is before our range of charaters we want to print so ignore it
+		cmp rax, 30	; ascii 31 is before our range of characters we want to print, so ignore it
 		jne noDoublePlaceholder ;check if we have to ignore the next lines
 		xor rax, rax	; reset rax so we print a clean 0 and nothing elese
 		jmp noPlaceholder ; if we have two placeholders dont print 0 twice
@@ -80,7 +80,7 @@ main:
 		xor rax, rax ; clean the hell out of it
 		mov rax, rsi ; load rsi into a temp register
 		and rax, 255 ; and to get the ascii representation BTW no shifting needed here
-		cmp rax, 127 ; check if we have a placeholder
+		cmp rax, 123 ; check if we have a placeholder
 		jne noPlaceholder ; reset rax if we have a placholder
 		xor rax, rax ; xor all the things
 		noPlaceholder:
