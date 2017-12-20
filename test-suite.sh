@@ -96,7 +96,7 @@ fi
 if [ "$(echo 'c3Nz' | ./decode)" == "sss" ]; then
   echo -e "\e[92m single loop passed"
 else
-  echo -e "\033[31m single loop FAILED: (echo 'c3Nz' | ./encode) expected sss"
+  echo -e "\033[31m single loop FAILED: $(echo 'c3Nz' | ./decode) expected sss"
 fi
 
 # test single loop with =
