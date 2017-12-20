@@ -93,7 +93,7 @@ else
 fi
 
 # test single loop no =
-if [ "$(echo 'c3Nz' | ./encode)" == "sss" ]; then
+if [ "$(echo 'c3Nz' | ./decode)" == "sss" ]; then
   echo -e "\e[92m single loop passed"
 else
   echo -e "\033[31m single loop FAILED: (echo 'c3Nz' | ./encode) expected sss"
