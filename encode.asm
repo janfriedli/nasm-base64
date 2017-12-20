@@ -11,16 +11,12 @@ SECTION .bss				; Section containing uninitialized data
 
 	BUFFERLENGTH EQU 3						; reserve 3 bytes which will be processed ad 6bit * 4
 	Buff	resb BUFFERLENGTH
-	res: resb 64
+	res: resb 64	; the buffer used to present the results
 
 SECTION .data				; Section containing initialised data
-
 	; this map is used to get the base64 representation of the coresponding 6 bits.
 	base64Charactermap:	db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-	inputMsg: db "Please enter anything you want to encode in base64: ", 10
-	formatGreet:    db "%s" ; The printf format
 	placeHolder: db "="
-	counter db 0
 
 SECTION .text			; Section containing code
 	global _start ; linker entry point
@@ -43,36 +39,30 @@ _start:
 		je Done				; Jump If Equal (to 0, from compare)
 
 		; Fill the data for further processing and handle new line feed
-		mov byte bh, [Buff]
+		mov byte bh, [Buff] ; load buff at pos o
 		call bhigh
-		mov byte bl, [Buff+1]
+		mov byte bl, [Buff+1] ; load buff at pos + 1
 		call blow
 		shl rbx, 16
-		mov byte bh, [Buff+2]
+		mov byte bh, [Buff+2] ; load buff at pos + 2
 		call bhigh
-		mov [Buff], rax
+		mov [Buff], rax ; save rax into Buffer
 
 		; First 6 Bits
-		mov rdx, rbx
-		shl rbx, 38 		; Move the finished 6 Bits away
-		shr rbx, 32			; Sets the bits back to the right place
-		shr rdx, 26
-		mov byte al, [base64Charactermap+rdx]
-		mov [res], al
+		mov rdx, rbx		; copy value
+		call shift
+		mov byte al, [base64Charactermap+rdx] ; get the corresponding character in the map
+		mov [res], al ; save first result in output buffer
 
 		; 6-12 Bits
-		mov rdx, rbx
-		shl rbx, 38
-		shr rbx, 32
-		shr rdx, 26
+		mov rdx, rbx ; copy value
+		call shift
 		mov byte al, [base64Charactermap+rdx]
 		mov [res+1], al
 
 		; 12-18 Bits
 		mov rdx, rbx
-		shl rbx, 38
-		shr rbx, 32
-		shr rdx, 26
+		call shift
 		call testForPlaceholder
 		cmp rbp, 1
 		je noAChar
@@ -82,9 +72,7 @@ _start:
 
 		; Last 6 bits
 		mov rdx, rbx
-		shl rbx, 38
-		shr rbx, 32
-		shr rdx, 26
+		call shift
 		call testForPlaceholder
 		cmp rbp, 2 ; jump over the add to result since we don't want to print an A
 		je noSecondAChar
@@ -123,6 +111,13 @@ _start:
 		mov bh, 0
 		notHigh:
 		ret
+
+	; does the actual shifting
+	shift:
+		shl rbx, 38 		; Move the finished 6 Bits away
+		shr rbx, 32			; Sets the bits back to the right place
+		shr rdx, 26
+		ret ; return to caller
 
 	printPlaceholders:
 		cmp rbp, 0
