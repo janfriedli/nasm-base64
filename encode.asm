@@ -95,21 +95,22 @@ _start:
 		jumpOver:
 		ret						; return to caller
 
-	blow:
-		cmp bl, 10
-		jne notBlow
+	blow:			;Checks if the char is a Linefeed
+	
+		cmp bl, 10	;Code 10 = Linefeed
+		jne notBlow	;Linefeed will be set to zero, any other char wont be affected
 		mov bl, 0
 		notBlow:
 		ret
 
-	bhigh:
-		cmp bh, 10
-		jne notHigh
+	bhigh:			;Checks if the char is a Linefeed
+		cmp bh, 10	;Code 10 = Linefeed
+		jne notHigh	;Linefeed will be set to zero, any other char wont be affected
 		mov bh, 0
 		notHigh:
 		ret
 
-	; does the actual encodeShiftinging
+	; does the actual encodeShifting
 	encodeShifting:
 		shl rbx, 38 		; Move the finished 6 Bits away
 		shr rbx, 32			; Sets the bits back to the right place
