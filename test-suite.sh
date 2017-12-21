@@ -1,5 +1,22 @@
 #!/bin/bash
+
+## Compile sources
+echo 'COMPILING'
+rm decode
+rm encode
+rm decode.o
+rm encode.o
 make
+
+## Decode tests from here on
+echo 'RUNNING ENCODE TESTS NOW'
+
+# test empty
+if [ "$(echo '' | ./encode)" == "" ]; then
+  echo -e "\e[92m empty passed"
+else
+  echo -e "\033[31m empty FAILED"
+fi
 
 # test single loop no =
 if [ "$(echo 'sss' | ./encode)" == "c3Nz" ]; then
@@ -58,6 +75,76 @@ if [ "$(echo 'iuasdfoa sdfkbasdfjas' | ./encode)" == "aXVhc2Rmb2Egc2Rma2Jhc2Rmam
   echo -e "\e[92m long with space passed"
 else
   echo -e "\033[31m long with space FAILED: $(echo 'iuasdfoa sdfkbasdfjas' | ./encode) expected aXVhc2Rmb2Egc2Rma2Jhc2RmamFz"
+fi
+
+## Decode tests from here on
+echo -e '\e[37m RUNNING DECODE TESTS NOW'
+
+
+# test empty
+if [ "$(echo '' | ./decode)" == "" ]; then
+  echo -e "\e[92m empty passed"
+else
+  echo -e "\033[31m empty FAILED"
+fi
+
+# test single loop no =
+if [ "$(echo 'c3Nz' | ./decode)" == "sss" ]; then
+  echo -e "\e[92m single loop passed"
+else
+  echo -e "\033[31m single loop FAILED: $(echo 'c3Nz' | ./decode) expected sss"
+fi
+
+# test single loop with =
+if [ "$(echo 'c2E=' | ./decode)" == "sa" ]; then
+  echo -e "\e[92m single loop with = passed"
+else
+  echo -e "\033[31m single loop with = FAILED: $(echo 'c2E=' | ./decode) expected sa"
+fi
+
+# test single loop with ==
+if [ "$(echo 'MA==' | ./decode)" == "0" ]; then
+  echo -e "\e[92m single loop with == passed"
+else
+  echo -e "\033[31m single loop with == FAILED: $(echo 'MA==' | ./decode) expected 0"
+fi
+
+#----------------------------------------------------------------
+
+# test double loop no =
+if [ "$(echo 'c2FzYWFz' | ./decode)" == "sasaas" ]; then
+  echo -e "\e[92m double loop passed"
+else
+  echo -e "\033[31m double loop FAILED: $(echo 'c2FzYWFz' | ./decode) expected sasaas "
+fi
+
+# test double loop with =
+if [ "$(echo 'c2FzYWE=' | ./decode)" == "sasaa" ]; then
+  echo -e "\e[92m double loop with = passed"
+else
+  echo -e "\033[31m double loop with = FAILED: $(echo 'c2FzYWE=' | ./decode) expected sasaa"
+fi
+
+# test double loop with ==
+if [ "$(echo 'c2FzYWFzcw==' | ./decode)" == "sasaass" ]; then
+  echo -e "\e[92m double loop with == passed"
+else
+  echo -e "\033[31m double loop with == FAILED: $(echo 'c2FzYWFzcw==' | ./decode) expected sasaass"
+fi
+
+# test long
+if [ "$(echo 'aXVhc2Rmb2FzZGZrYmFzZGZqYXM=' | ./decode)" == "iuasdfoasdfkbasdfjas" ]; then
+  echo -e "\e[92m long with = passed"
+else
+  echo -e "\033[31m long with = FAILED: $(echo 'aXVhc2Rmb2FzZGZrYmFzZGZqYXM=' | ./decode) expected iuasdfoasdfkbasdfjas"
+fi
+
+
+# test long with space
+if [ "$(echo 'aXVhc2Rmb2Egc2Rma2Jhc2RmamFz' | ./decode)" == "iuasdfoa sdfkbasdfjas" ]; then
+  echo -e "\e[92m long with space passed"
+else
+  echo -e "\033[31m long with space FAILED: $(echo 'aXVhc2Rmb2Egc2Rma2Jhc2RmamFz' | ./decode) expected iuasdfoa sdfkbasdfjas"
 fi
 
 exit 0

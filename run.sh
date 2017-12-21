@@ -1,2 +1,0 @@
-make
-./encode < test.txt
